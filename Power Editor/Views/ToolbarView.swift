@@ -16,6 +16,8 @@ struct ToolbarView: View {
   @State var deleteAlertVisible:Bool = false
   @State private var selectedImage: UIImage? = nil
   
+  var screenWidth:CGFloat { UIScreen.main.bounds.width }
+  
   func deleteActiveLayer() {
     guard let index = getActiveLayerIndex() else { return }
     print("deleted layer", index)
@@ -52,10 +54,12 @@ struct ToolbarView: View {
   
   var body: some View {
     VStack(spacing: 0){
+      // Layer Options
       ScrollView(.horizontal, showsIndicators: false){
         HStack{
-          if isLayerActive() {
-            switch layers[getActiveLayerIndex()!].content {
+          if isLayerActive(), let activeIndex = getActiveLayerIndex(), activeIndex >= 0 {
+            
+            switch layers[activeIndex].content {
               case .text(let text):
                 //                  text input field
                 TextField("",text: Binding(get: {
@@ -63,7 +67,7 @@ struct ToolbarView: View {
                 }, set: {
                   newValue in
                   //                update the active layer content
-                  layers[getActiveLayerIndex()!].content = .text(newValue)
+                  layers[activeIndex].content = .text(newValue)
                   print(newValue)
                   
                 })).frame(maxHeight: .infinity)
@@ -75,10 +79,19 @@ struct ToolbarView: View {
                   color
                 }, set: {
                   newValue in
-                  layers[getActiveLayerIndex()!].content = .color(newValue)
+                  layers[activeIndex].content = .color(newValue)
                 })).frame(maxWidth: 30)
-              default: Text("selected layer \(getActiveLayerIndex() ?? -1)")
+              default: Text("selected layer \(activeIndex)")
             }
+            // add toggle which sets value of aspect ratio in layers[getActiveLayerIndex()!].maintainAspectRatio
+            Toggle("Aspect Ratio", isOn: Binding(
+                          get: { layers[activeIndex].maintainAspectRatio },
+                          set: { newValue in
+                            layers[activeIndex].maintainAspectRatio = newValue
+                          }
+                        ))
+            .toggleStyle(SwitchToggleStyle(tint: .blue)).scaledToFit()
+//                        .padding()
             Spacer()
             Button(action:{deleteAlertVisible = true}){
               Image(systemName: "trash").foregroundStyle(.red)
@@ -94,6 +107,7 @@ struct ToolbarView: View {
         )
       }.background(isLayerActive() ? .black : .gray)
       
+      // Tools
       ScrollView(.horizontal, showsIndicators: false) {
         HStack(spacing: 10) {
           Button(action:addTextLayer) {
@@ -102,23 +116,36 @@ struct ToolbarView: View {
           Button(action:addColorLayer) {
             Image(systemName: "square.fill") .font(.system(size: iconSize))
           }
-          PhotosPicker(selection:Binding<PhotosPickerItem?>(
-            get: { nil },
+          PhotosPicker(
+selection:Binding<PhotosPickerItem?>(
+            get: { nil
+ },
             set: { item in
               guard let item = item else { return }
               Task {
                 if let data = try? await item.loadTransferable(type: Data.self),
                    let image = UIImage(data: data) {
+                  
+                  let scaledImgWidth = screenWidth/2
+                  let scaledImgHeight = scaledImgWidth * image.size.height / image.size.width
+                  
+                  // add to layers
                   layers.append(
                     Layer(
                       name: "Image Layer",
+                      size: CGSize(
+                        width: scaledImgWidth,
+                        height: scaledImgHeight
+                      ),
                       content: .image(Image(uiImage: image))
                     )
                   )
                 }
               }
             }
-          ),matching: .images){
+          ),
+matching: .images
+){
             Image(systemName: "photo.badge.plus.fill")
                           .font(.system(size: iconSize))
           }

@@ -13,9 +13,9 @@ struct Layer: Identifiable {
     var name: String
     var isVisible: Bool = true
     var isActive: Bool = false
-  var position:CGPoint = CGPoint(x: UIScreen.main.bounds.width/2 - 50, y: UIScreen.main.bounds.width/2 - 50)
-//  var position:CGPoint = CGPoint(x: 0, y: 0)
-  var size:CGSize = CGSize(width: 100, height: 100)
+    var position:CGPoint = CGPoint(x: UIScreen.main.bounds.width/2 - 50, y: UIScreen.main.bounds.width/2 - 50)
+    var size:CGSize = CGSize(width: 100, height: 100)
+    var maintainAspectRatio:Bool = true
     var content: LayerContent
 }
 
