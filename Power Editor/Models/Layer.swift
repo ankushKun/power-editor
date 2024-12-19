@@ -17,6 +17,10 @@ struct Layer: Identifiable {
     var size:CGSize = CGSize(width: 100, height: 100)
     var maintainAspectRatio:Bool = true
     var content: LayerContent
+  
+//  static func == (lhs: Layer, rhs: Layer) -> Bool {
+//    lhs.id == rhs.id
+//  }
 }
 
 enum LayerContent {

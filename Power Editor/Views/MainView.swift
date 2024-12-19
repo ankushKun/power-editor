@@ -21,7 +21,7 @@ struct MainView: View {
     ZStack(alignment: .leading) {
       // Main Content
       VStack(spacing: 0) {
-        TopMenuView(isSidebarVisible: $isSidebarVisible).zIndex(5)
+        TopMenuView(layers:$layers,isSidebarVisible: $isSidebarVisible).zIndex(5)
         WorkspaceView(layers: $layers).zIndex(1)
         ToolbarView(layers:$layers).zIndex(5)
       }.background(.gray)
