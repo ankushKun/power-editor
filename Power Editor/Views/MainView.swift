@@ -12,8 +12,15 @@ struct MainView: View {
   @State private var isSidebarVisible: Bool = false
   @State private var layers: [Layer] = [
     Layer(name: "Blue Layer",position: CGPoint(x:10,y:10), content: .color(.blue)),
-    Layer(name: "Red Layer", position:CGPoint(x:280, y:280), content: .color(.red)),
-    Layer(name: "Text Layer", content: .text("Hello, World!"))
+    Layer(name: "Text Layer", content: .text("Hello, World!")),
+    Layer(
+      name: "Red Layer",
+      position:CGPoint(
+        x:UIScreen.main.bounds.width-110,
+        y:UIScreen.main.bounds.width-110
+      ),
+      content: .color(.red)
+    )
   ]
   
   
