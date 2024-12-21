@@ -9,6 +9,8 @@ import SwiftUI
 
 struct WorkspaceView: View {
   @Binding var layers: [Layer]
+  @EnvironmentObject var options: OptionsModel
+  
   @State var initialPosition: CGPoint = .zero
   @State var initialSize: CGSize = .zero
   
@@ -37,6 +39,7 @@ struct WorkspaceView: View {
             .gesture(
               TapGesture()
                 .onEnded {
+                  if (layers[index].isLocked) {return}
                   let activeIndex = layers.firstIndex { $0.id == layers[index].id }!
                   layers.enumerated().forEach { idx, _ in
                     layers[idx].isActive = idx == activeIndex
@@ -46,6 +49,7 @@ struct WorkspaceView: View {
             .gesture(
               DragGesture()
                 .onChanged { value in
+                  if (layers[index].isLocked) {return}
                   if layers[index].isActive {
                     if initialPosition == .zero {
                       initialPosition = layers[index].position
@@ -60,7 +64,7 @@ struct WorkspaceView: View {
             )
             .overlay(
               ZStack {
-                if layers[index].isActive {
+                if layers[index].isActive && !layers[index].isLocked {
                   Rectangle()
                     .foregroundStyle(.clear).border(.blue)
                     .frame(
@@ -87,7 +91,7 @@ struct WorkspaceView: View {
                           initialSize = layers[index].size
                         }
                         
-                        if layers[index].maintainAspectRatio {
+                        if options.maintainAspectRatio {
                           let aspectRatio = initialSize.width / initialSize.height
                           let scalingFactor = max(dragDistX, dragDistY)
                           

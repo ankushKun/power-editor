@@ -8,6 +8,8 @@
 
 import SwiftUI
 
+let iconSize: CGFloat = 25
+
 struct MainView: View {
   @State private var isSidebarVisible: Bool = false
   @State private var layers: [Layer] = [

@@ -6,31 +6,22 @@
 //
 import SwiftUI
 
+//var maintainAspectRatio: Bool = true
+
 struct TopMenuView: View {
   @Binding var layers: [Layer]
   @Binding var isSidebarVisible: Bool
+  @EnvironmentObject var options: OptionsModel
   
   var screenWidth: CGFloat { UIScreen.main.bounds.width }
   
-//  func saveCanvas(){
-//    print("trying to save canvas")
-//    var canvas: some View {
-//      ZStack(alignment: .center) {
-//        ForEach(
-//          Array(layers.enumerated().filter { $0.element.isVisible }).reversed(),
-//          id: \.element.id
-//        ) { index, _ in
-//          LayerContentView(layer: layers[index])
-//        }
-//      } .background(.white)
-//        .frame(width: screenWidth, height: screenWidth)
-//    }
-//    
-//    guard let img = ImageRenderer(content: canvas).uiImage else { return }
-//    
-//    UIImageWriteToSavedPhotosAlbum(img, nil, nil, nil)
-//    print("saved")
-//  }
+  func isLayerActive() -> Bool {
+    return layers.contains(where: \.isActive)
+  }
+  
+  func getActiveLayerIndex() -> Int? {
+    return layers.firstIndex(where: \.isActive)
+  }
   
   func saveCanvas() {
       print("Trying to save canvas")
@@ -89,16 +80,33 @@ struct TopMenuView: View {
             isSidebarVisible.toggle()
           }) {
             Label("Layers", systemImage: "square.3.layers.3d.top.filled")
-              .font(.system(size: 20))
+              .font(.system(size: iconSize/1.2))
           }
           
           Spacer()
+          
           Button(action:saveCanvas) {
               Label("Export", systemImage: "square.and.arrow.up")
-              .font(.system(size: 20))
+              .font(.system(size: iconSize/1.2))
             }
         }
-        .padding(10)
+        .frame(height:40)
+        .padding(5)
         .background(.black)
+      
+      ScrollView(.horizontal, showsIndicators: false){
+        HStack{
+          if isLayerActive(), let activeIndex = getActiveLayerIndex(), activeIndex >= 0 {
+            Button(action:{options.maintainAspectRatio.toggle()}){
+              Image(
+                systemName: options.maintainAspectRatio ? "aspectratio.fill":"aspectratio"
+              )
+              .font(.system(size: iconSize))
+            }
+          }
+        }
+        .frame(height:40)
+        .padding(5)
+      }.background(isLayerActive() ? .black : .gray)
     }
 }

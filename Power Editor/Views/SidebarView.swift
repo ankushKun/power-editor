@@ -10,10 +10,25 @@ struct SidebarView: View {
   let iconSize: CGFloat = 25
   @Binding var isSidebarVisible: Bool
   @Binding var layers: [Layer]
+  @State var deleteAlertVisible:Bool = false
+  
+  func isLayerActive() -> Bool {
+    return layers.contains(where: \.isActive)
+  }
+  
+  func getActiveLayerIndex() -> Int? {
+    return layers.firstIndex(where: \.isActive)
+  }
+  
+  func deleteActiveLayer() {
+    guard let index = getActiveLayerIndex() else { return }
+    print("deleted layer", index)
+    layers.remove(at: index)
+  }
   
   var body: some View {
     HStack{
-      VStack(alignment: .leading) {
+      VStack(alignment: .leading, spacing: 0) {
         HStack
         {
           Image(systemName: "square.3.layers.3d").font(.system(size: iconSize))
@@ -38,7 +53,6 @@ struct SidebarView: View {
                 for i in layers.indices {
                   layers[i].isActive = (layers[i].id == layer.id)
                 }
-                
                 print(layers)
               }){
                 Text(layer.name)
@@ -52,23 +66,65 @@ struct SidebarView: View {
               
               Spacer()
               
-              Button(action:{
-                layer.isVisible.toggle()
-              }){
-                if layer.isVisible {
-                  Image(systemName: "eye").font(.system(size: iconSize/1.5))
-                }else{
-                  Image(systemName: "eye.slash").font(.system(size: iconSize/1.5))
-                }
+              Button(action:{layer.isLocked.toggle()}){
+                Image(systemName: (layer.isLocked ? "lock":"lock.open")).font(.system(size: iconSize/1.25))
+              }.buttonStyle(PlainButtonStyle())
+              
+              Button(action:{layer.isVisible.toggle()}){
+                Image(systemName: (layer.isVisible ? "eye":"eye.slash"))
+                  .font(.system(size: iconSize/1.5))
               }.buttonStyle(PlainButtonStyle())
             }.listRowBackground(layer.isActive ? .gray.opacity(0.3) : Color.clear)
 //          }
         }.listStyle(.plain)
         
-        HStack(alignment: .bottom) {
-          
+        if isLayerActive(), let activeIndex = getActiveLayerIndex(), activeIndex >= 0 {
+          VStack(alignment: .leading,spacing: 5) {
+            HStack{
+              Spacer()
+              Button(action:{deleteAlertVisible = true}){
+                Image(systemName: "trash")
+                  .foregroundStyle(.red)
+                  .font(.system(size: iconSize/1.3))
+              }.alert("Are you sure you want to delete the layer? This action is irreversible", isPresented: $deleteAlertVisible){
+                Button("Delete", role:.destructive) {
+                  deleteActiveLayer()
+                }
+              }
+            }.padding(.trailing,7)
+            
+            HStack(spacing:5){
+              TextField("",
+                        text: Binding(
+                          get: {
+                            layers[activeIndex].name
+                          },
+                          set: { value in
+                            layers[activeIndex].name = value
+                          })
+              )
+              .padding(5)
+              .background(.white).foregroundStyle(.black)
+            }
+            .padding(.leading,5)
+            .padding(.trailing,5)
+            
+            HStack(spacing: 5){
+              Text("Opacity")
+              Slider(
+                value: Binding(get: {layers[activeIndex].opacity}, set: { value in
+                  layers[activeIndex].opacity = value
+                }),
+                in: 0...1
+              )
+              Text("\(Int(layers[activeIndex].opacity*100))%")
+            }.padding(.leading,5).padding(.trailing,5)
+            
+          }
+          .frame(maxWidth: .infinity)
         }
-        .padding(.bottom,14).padding(.leading,10)
+        Rectangle().frame(maxHeight: 50).foregroundStyle(.clear)
+        
       }
       .foregroundColor(.white)
       .background(.black.opacity(0.85))
