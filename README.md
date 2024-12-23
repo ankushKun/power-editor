@@ -6,7 +6,7 @@ yeah I agree I need a UIUX designer in the team
 
 ## Installation
 
-![download](./assets/download.svg) _Coming Soon for just $0.99_
+[![download](./assets/download.svg)](https://apps.apple.com/us/app/power-editor/id6739633465?platform=iphone)
 
 Or if you have [AltStore](altstore.io) setup, you can also download the .ipa file from the [latest release](https://github.com/ankushKun/power-editor/releases) and install it using AltStore for free. Although I would appreciate if you buy it and also leave a review ;)
 
