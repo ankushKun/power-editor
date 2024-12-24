@@ -16,8 +16,8 @@ struct Layer: Identifiable {
   var isLocked:Bool = false
   var opacity:Double = 1.0
   var position:CGPoint = CGPoint(x: UIScreen.main.bounds.width/2 - 50, y: UIScreen.main.bounds.width/2 - 50)
+  var rotation: Double = 0.0
   var size:CGSize = CGSize(width: 100, height: 100)
-//  var maintainAspectRatio:Bool = true
   var content: LayerContent
   
   //  static func == (lhs: Layer, rhs: Layer) -> Bool {

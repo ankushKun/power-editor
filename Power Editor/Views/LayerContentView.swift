@@ -26,10 +26,12 @@ struct LayerContentView: View {
       }
     }
     .frame(width: layer.size.width, height: layer.size.height)
+    .rotationEffect(.degrees(layer.rotation))
     .position(
       x: layer.position.x + layer.size.width / 2,
       y: layer.position.y + layer.size.height / 2
     )
+    
     .opacity(layer.opacity)
   }
 }
