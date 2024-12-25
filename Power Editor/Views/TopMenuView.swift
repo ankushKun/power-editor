@@ -104,11 +104,21 @@ struct TopMenuView: View {
           .font(.system(size: iconSize/1.1))
           
           Menu {
-            Text("Built with ♥️")
+            Button("Open Project", systemImage: "iphone.and.arrow.right.outward"){
+              showToastMessage("TODO")
+            }
+            Button("Save Project", systemImage: "iphone.and.arrow.right.inward"){
+//              print(layers)
+//              print(JSONEncoder().encode(layers))
+              showToastMessage("TODO")
+            }
             Divider()
             Link("Follow on X (Twitter)", destination: URL(string:"https://twitter.com/PowerEditor_")!)
             Link("Star Github Repo", destination: URL(string: "https://github.com/ankushKun/power-editor")!)
             Link("App Store Listing", destination: URL(string: "https://apps.apple.com/us/app/power-editor/id6739633465?platform=iphone")!)
+            Divider()
+            Text("Built with ♥️")
+
           }label:{
             Image(systemName: "ellipsis.circle")
           }.font(.system(size: iconSize/1.1)).padding(.top,5).padding(.horizontal,5)
