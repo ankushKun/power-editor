@@ -35,7 +35,7 @@ Layers
 Transforms
 - [x] Drag
 - [x] Scale
-- [ ] Rotate
+- [x] Rotate
 - [ ] Flip
 - [x] Aspect Ratio Toggle
 
