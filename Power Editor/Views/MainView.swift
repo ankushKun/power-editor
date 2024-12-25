@@ -14,7 +14,12 @@ struct MainView: View {
   @State private var isSidebarVisible: Bool = false
   @State private var layers: [Layer] = [
     Layer(name: "Blue Layer",position: CGPoint(x:10,y:10), content: .color(.blue)),
-    Layer(name: "Text Layer", content: .text("Hello, World!")),
+    Layer(
+      name: "Text Layer",
+      position: CGPoint(x: UIScreen.main.bounds.width/2-100, y: UIScreen.main.bounds.width/2-50),
+      size: CGSize(width: 200, height:100),
+      content: .text("💪 Power Editor")
+    ),
     Layer(
       name: "Red Layer",
       position:CGPoint(

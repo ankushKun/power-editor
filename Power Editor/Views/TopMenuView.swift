@@ -6,6 +6,7 @@ struct TopMenuView: View {
   @EnvironmentObject var options: OptionsModel
   @State private var showToast = false
   @State private var toastMessage = "..."
+  @State var deleteAlertVisible:Bool = false
   
   var screenWidth: CGFloat { UIScreen.main.bounds.width }
   
@@ -15,6 +16,13 @@ struct TopMenuView: View {
   
   func getActiveLayerIndex() -> Int? {
     return layers.firstIndex(where: \.isActive)
+  }
+  
+  func deleteActiveLayer() {
+    guard let index = getActiveLayerIndex() else { return }
+    print("deleted layer", index)
+    layers.remove(at: index)
+    showToastMessage("Layer deleted")
   }
   
   func showToastMessage(_ message: String) {
@@ -90,18 +98,28 @@ struct TopMenuView: View {
           
           Spacer()
           
-          Button(action: saveCanvas) {
-            Label("Export", systemImage: "square.and.arrow.up")
-              .font(.system(size: iconSize/1.2))
+          Button(action: saveCanvas){
+            Image(systemName: "square.and.arrow.up")
           }
+          .font(.system(size: iconSize/1.1))
+          
+          Menu {
+            Text("Built with ♥️")
+            Divider()
+            Link("Follow on X (Twitter)", destination: URL(string:"https://twitter.com/PowerEditor_")!)
+            Link("Star Github Repo", destination: URL(string: "https://github.com/ankushKun/power-editor")!)
+            Link("App Store Listing", destination: URL(string: "https://apps.apple.com/us/app/power-editor/id6739633465?platform=iphone")!)
+          }label:{
+            Image(systemName: "ellipsis.circle")
+          }.font(.system(size: iconSize/1.1)).padding(.top,5).padding(.horizontal,5)
         }
         .frame(height: 40)
         .padding(5)
         .background(.black)
         
-        ScrollView(.horizontal, showsIndicators: false) {
-          HStack {
-//            if isLayerActive(), let activeIndex = getActiveLayerIndex(), activeIndex >= 0 {
+        HStack{
+          ScrollView(.horizontal, showsIndicators: false) {
+            HStack {
               Button(action: {
                 options.maintainAspectRatio.toggle()
                 if (options.maintainAspectRatio){
@@ -134,12 +152,26 @@ struct TopMenuView: View {
                 .foregroundStyle(options.activeTool == tool ? .black : .blue)
                 .cornerRadius(5)
               }
-//            }
+            }
+            .frame(height: 40).frame(maxWidth: .infinity)
+            .padding(5)
           }
-          .frame(height: 40)
-          .padding(5)
-        }
-        .background(.black)
+          
+          
+          Button(action:{deleteAlertVisible = true}) {
+            Image(systemName: "trash")
+              .foregroundStyle(isLayerActive() ? .red : .gray)
+              .font(.system(size: iconSize/1.25))
+              .padding(.trailing,8)
+          }.disabled(!isLayerActive())
+            .alert("Are you sure you want to delete the layer? This action is irreversible", isPresented: $deleteAlertVisible){
+              Button("Delete", role:.destructive) {
+                deleteActiveLayer()
+              }
+            }
+          
+        } .background(.black)
+        
       }
       if showToast {
         ToastView(message: toastMessage)

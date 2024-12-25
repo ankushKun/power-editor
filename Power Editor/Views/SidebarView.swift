@@ -45,52 +45,52 @@ struct SidebarView: View {
         
         List($layers,editActions: .move) { $layer in
           // Add layers dynamically
-//          ForEach($layers) { $layer in
-            HStack() {
-              Button(action:{
-                // loop through all layers and set them to false
-                // for the active layer set isActive to true
-                for i in layers.indices {
-                  layers[i].isActive = (layers[i].id == layer.id)
-                }
-                print(layers)
-              }){
-                Text(layer.name)
-                  .padding(.top,5)
-                  .padding(.bottom,5)
-                  .frame(
-                    maxWidth: .infinity,
-                    alignment: .leading
-                  )
-              }.buttonStyle(PlainButtonStyle())
-              
-              Spacer()
-              
-              Button(action:{layer.isLocked.toggle()}){
-                Image(systemName: (layer.isLocked ? "lock":"lock.open")).font(.system(size: iconSize/1.25))
-              }.buttonStyle(PlainButtonStyle())
-              
-              Button(action:{layer.isVisible.toggle()}){
-                Image(systemName: (layer.isVisible ? "eye":"eye.slash"))
-                  .font(.system(size: iconSize/1.5))
-              }.buttonStyle(PlainButtonStyle())
-            }.listRowBackground(layer.isActive ? .gray.opacity(0.3) : Color.clear)
-//          }
+          //          ForEach($layers) { $layer in
+          HStack() {
+            Button(action:{
+              // loop through all layers and set them to false
+              // for the active layer set isActive to true
+              for i in layers.indices {
+                layers[i].isActive = (layers[i].id == layer.id)
+              }
+              print(layers)
+            }){
+              Text(layer.name)
+                .padding(.top,5)
+                .padding(.bottom,5)
+                .frame(
+                  maxWidth: .infinity,
+                  alignment: .leading
+                )
+            }.buttonStyle(PlainButtonStyle())
+            
+            Spacer()
+            
+            Button(action:{layer.isLocked.toggle()}){
+              Image(systemName: (layer.isLocked ? "lock":"lock.open")).font(.system(size: iconSize/1.25))
+            }.buttonStyle(PlainButtonStyle())
+            
+            Button(action:{layer.isVisible.toggle()}){
+              Image(systemName: (layer.isVisible ? "eye":"eye.slash"))
+                .font(.system(size: iconSize/1.5))
+            }.buttonStyle(PlainButtonStyle())
+          }.listRowBackground(layer.isActive ? .gray.opacity(0.3) : Color.clear)
+          //          }
         }.listStyle(.plain)
         
         if isLayerActive(), let activeIndex = getActiveLayerIndex(), activeIndex >= 0 {
           VStack(alignment: .leading,spacing: 5) {
             HStack{
               Spacer()
-              Button(action:{deleteAlertVisible = true}){
-                Image(systemName: "trash")
-                  .foregroundStyle(.red)
-                  .font(.system(size: iconSize/1.3))
-              }.alert("Are you sure you want to delete the layer? This action is irreversible", isPresented: $deleteAlertVisible){
-                Button("Delete", role:.destructive) {
-                  deleteActiveLayer()
-                }
-              }
+              //              Button(action:{deleteAlertVisible = true}){
+              //                Image(systemName: "trash")
+              //                  .foregroundStyle(.red)
+              //                  .font(.system(size: iconSize/1.3))
+              //              }.alert("Are you sure you want to delete the layer? This action is irreversible", isPresented: $deleteAlertVisible){
+              //                Button("Delete", role:.destructive) {
+              //                  deleteActiveLayer()
+              //                }
+              //              }
             }.padding(.trailing,7)
             
             HStack(spacing:5){
@@ -131,13 +131,13 @@ struct SidebarView: View {
       
       if isSidebarVisible{
         Rectangle()
-                       .foregroundColor(.clear)
-                       .frame(maxWidth: 100, maxHeight: .infinity)
-                       .contentShape(Rectangle())
-                       
-                       .onTapGesture {
-                           isSidebarVisible.toggle()
-                       }.transition(.move(edge: .leading))
+          .foregroundColor(.clear)
+          .frame(maxWidth: 100, maxHeight: .infinity)
+          .contentShape(Rectangle())
+        
+          .onTapGesture {
+            isSidebarVisible.toggle()
+          }.transition(.move(edge: .leading))
       }
       
     }.background(.black.opacity(0.5))

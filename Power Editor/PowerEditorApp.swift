@@ -9,11 +9,11 @@ import SwiftUI
 
 @main
 struct PowerEditorApp: App {
-     var body: some Scene {
-       WindowGroup {
-         MainView().environmentObject(OptionsModel())
-       }
-     }
+  var body: some Scene {
+    WindowGroup {
+      MainView().environmentObject(OptionsModel())
+    }
+  }
 }
 
 #Preview {

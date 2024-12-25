@@ -10,19 +10,19 @@ import SwiftUI
 
 struct LayerContentView: View {
   var layer: Layer
-
+  
   var body: some View {
     ZStack {
       switch layer.content {
-      case .color(let color):
-        Rectangle().fill(color)
-      case .image(let image):
-        image.resizable()
-      case .text(let text):
-        Text(text)
-          .font(.system(size: 20))
-          .foregroundColor(.black)
-          .multilineTextAlignment(.center)
+        case .color(let color):
+          Rectangle().fill(color)
+        case .image(let image):
+          image.resizable()
+        case .text(let text):
+          Text(text)
+            .font(.system(size: 20))
+            .foregroundColor(.black)
+            .multilineTextAlignment(.center)
       }
     }
     .frame(width: layer.size.width, height: layer.size.height)
