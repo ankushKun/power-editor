@@ -13,7 +13,7 @@ let iconSize: CGFloat = 25
 struct MainView: View {
   @State private var isSidebarVisible: Bool = false
   @State private var layers: [Layer] = [
-    Layer(name: "Blue Layer",position: CGPoint(x:10,y:10), content: .color(.blue)),
+    Layer(name: "Blue Layer",position: CGPoint(x:10,y:10), content: .color(.red)),
     Layer(
       name: "Text Layer",
       position: CGPoint(x: UIScreen.main.bounds.width/2-100, y: UIScreen.main.bounds.width/2-50),
@@ -26,7 +26,7 @@ struct MainView: View {
         x:UIScreen.main.bounds.width-110,
         y:UIScreen.main.bounds.width-110
       ),
-      content: .color(.red)
+      content: .color(.blue)
     )
   ]
   

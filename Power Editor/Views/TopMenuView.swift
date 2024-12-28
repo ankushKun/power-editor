@@ -105,12 +105,37 @@ struct TopMenuView: View {
           
           Menu {
             Button("Open Project", systemImage: "iphone.and.arrow.right.outward"){
-              showToastMessage("TODO")
+              let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+              let fileURL = documentsDirectory.appendingPathComponent("layers.json")
+              do {
+                let data = try Data(contentsOf: fileURL)
+                if let jsonString = String(data: data, encoding: .utf8) {
+                  print("Loading:", jsonString)
+                }
+                let decoder = JSONDecoder()
+                layers = try decoder.decode([Layer].self, from: data)
+                showToastMessage("Loaded")
+              } catch {
+                showToastMessage("Error loading layers: \(error)")
+                print("Error loading layers: \(error)")
+              }
             }
             Button("Save Project", systemImage: "iphone.and.arrow.right.inward"){
-//              print(layers)
-//              print(JSONEncoder().encode(layers))
-              showToastMessage("TODO")
+              let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+              let fileURL = documentsDirectory.appendingPathComponent("layers.json")
+              do {
+                let encoder = JSONEncoder()
+                encoder.outputFormatting = .prettyPrinted
+                let data = try encoder.encode(layers)
+                if let jsonString = String(data: data, encoding: .utf8){
+                  print("Saving: \(jsonString)")
+                }
+                try data.write(to: fileURL)
+                showToastMessage("Saved")
+              } catch {
+                print("Error loading layers: \(error)")
+                showToastMessage("Error saving layers: \(error)")
+              }
             }
             Divider()
             Link("Follow on X (Twitter)", destination: URL(string:"https://twitter.com/PowerEditor_")!)
@@ -118,7 +143,7 @@ struct TopMenuView: View {
             Link("App Store Listing", destination: URL(string: "https://apps.apple.com/us/app/power-editor/id6739633465?platform=iphone")!)
             Divider()
             Text("Built with ♥️")
-
+            
           }label:{
             Image(systemName: "ellipsis.circle")
           }.font(.system(size: iconSize/1.1)).padding(.top,5).padding(.horizontal,5)
