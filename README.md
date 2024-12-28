@@ -1,8 +1,8 @@
-# Power Editor :3
+# Power Editor ![X (formerly Twitter) Follow](https://img.shields.io/twitter/follow/PowerEditor_?style=social) :3
 
 ![banner](./assets/banner.png)
 
-yeah I agree I need a UIUX designer in the team
+yeah I agree I need a UIUX designer on the team
 
 ## Installation
 
