@@ -16,19 +16,19 @@ struct MainView: View {
   @State private var layers: [Layer] = [
     Layer(name: "Red Layer",
           position: CGPoint(x: 10, y: 10),
-          size: CGSize(width:initialCanvasSize.width/10,height:initialCanvasSize.height/10),
+          size: CGSize(width:initialCanvasSize.width/5,height:initialCanvasSize.height/5),
           content: .color(.red)
          ),
     Layer(
       name: "Text Layer", 
-      position: CGPoint(x: initialCanvasSize.width/2 - initialCanvasSize.width/20, y: initialCanvasSize.height/2 - initialCanvasSize.height/20),
-      size: CGSize(width: initialCanvasSize.width/10, height: initialCanvasSize.height/10),
+      position: CGPoint(x: initialCanvasSize.width/2 - 250, y: initialCanvasSize.height/2 - 50),
+      size: CGSize(width: 500, height: 100),
       content: .text("💪 Power Editor")
     ),
     Layer(
       name: "Blue Layer",
-      position: CGPoint(x: initialCanvasSize.width - initialCanvasSize.width/10, y: initialCanvasSize.height - initialCanvasSize.height/10),
-      size: CGSize(width: initialCanvasSize.width/10, height: initialCanvasSize.height/10),
+      position: CGPoint(x: initialCanvasSize.width - initialCanvasSize.width/5 - 10, y: initialCanvasSize.height - initialCanvasSize.height/5 - 10),
+      size: CGSize(width: initialCanvasSize.width/5, height: initialCanvasSize.height/5),
       content: .color(.blue)
     )
   ]

@@ -18,6 +18,7 @@ struct WorkspaceView: View {
   @State var startAngle: Double = .zero
   
   private var screenWidth: CGFloat { UIScreen.main.bounds.width }
+  private var screenHeight: CGFloat { UIScreen.main.bounds.height }
   private var scaleFactor: CGFloat { screenWidth / options.canvasSize.width }
   
   func deactivateLayers() {
@@ -59,15 +60,20 @@ struct WorkspaceView: View {
   
   var body: some View {
     VStack(spacing: 0) {
-      
       Rectangle()
-        .onTapGesture { deactivateLayers() }
         .foregroundStyle(.gray)
-        .zIndex(-10)
-
-      Spacer()
+        .zIndex(0)
+        .contentShape(Rectangle())
+        .onTapGesture { deactivateLayers() }
       
       ZStack(alignment: .center) { 
+        Rectangle()
+          .fill(.white)
+          .frame(maxWidth: .infinity, maxHeight: screenHeight - 250)
+          .aspectRatio(options.canvasSize.width / options.canvasSize.height, contentMode: .fill)
+          .onTapGesture { deactivateLayers() }
+          .zIndex(1)
+          
         ForEach(
           Array(layers.enumerated().filter { $0.element.isVisible }).reversed(),
           id: \.element.id
@@ -75,6 +81,7 @@ struct WorkspaceView: View {
           index,
           _ in
           LayerContentView(layer: layers[index])
+          .zIndex(2)
             .gesture(
               TapGesture()
                 .onEnded {
@@ -93,8 +100,8 @@ struct WorkspaceView: View {
                     if initialPosition == .zero {
                       initialPosition = layers[index].position
                     }
-                    layers[index].position.x = initialPosition.x - value.startLocation.x * scaleFactor + value.location.x * scaleFactor
-                    layers[index].position.y = initialPosition.y - value.startLocation.y * scaleFactor + value.location.y * scaleFactor
+                    layers[index].position.x = initialPosition.x - value.startLocation.x / scaleFactor + value.location.x / scaleFactor
+                    layers[index].position.y = initialPosition.y - value.startLocation.y / scaleFactor + value.location.y / scaleFactor
                   }
                 }
                 .onEnded { _ in
@@ -152,8 +159,8 @@ struct WorkspaceView: View {
                   .highPriorityGesture(
                     DragGesture(minimumDistance: 1)
                       .onChanged { value in
-                        let dragDistX = value.location.x - value.startLocation.x
-                        let dragDistY = value.location.y - value.startLocation.y
+                        let dragDistX = (value.location.x - value.startLocation.x ) / scaleFactor
+                        let dragDistY = (value.location.y - value.startLocation.y ) / scaleFactor
                         
                         switch options.activeTool {
                           case .move:
@@ -169,7 +176,7 @@ struct WorkspaceView: View {
                               let newWidth = max(20, initialSize.width + scalingFactor)
                               let newHeight = max(20, newWidth / aspectRatio)
                               
-                              layers[index].size = CGSize(width: newWidth, height: newHeight)
+                              layers[index].size = CGSize(width: newWidth , height: newHeight )
                             } else {
                               layers[index].size = CGSize(
                                 width: max(20, initialSize.width + dragDistX),
@@ -222,20 +229,15 @@ struct WorkspaceView: View {
             )
         }
       }
-      .contentShape(Rectangle())
-      .background(.white)
-      // .frame(width: screenWidth, height: screenWidth)
-      // .frame(minWidth: screenWidth, idealWidth: screenWidth, maxWidth: screenWidth, minHeight: screenWidth, idealHeight: screenWidth, maxHeight: screenWidth)
+      .background(.gray)
       .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
-      .aspectRatio(options.canvasSize.width / options.canvasSize.height, contentMode: .fill)
-      .onTapGesture { deactivateLayers() }
       .zIndex(1)
       
-      
       Rectangle()
-        .onTapGesture { deactivateLayers() }
         .foregroundStyle(.gray)
-        .zIndex(-10)
+        .zIndex(0)
+        .contentShape(Rectangle())
+        .onTapGesture { deactivateLayers() }
     }
     .background(.gray)
   }
