@@ -13,19 +13,21 @@ let iconSize: CGFloat = 25
 struct MainView: View {
   @State private var isSidebarVisible: Bool = false
   @State private var layers: [Layer] = [
-    Layer(name: "Blue Layer",position: CGPoint(x:10,y:10), content: .color(.red)),
+    Layer(name: "Red Layer",
+          position: CGPoint(x: 10, y: 10),
+          size: CGSize(width:200,height:200),
+          content: .color(.red)
+         ),
     Layer(
-      name: "Text Layer",
-      position: CGPoint(x: UIScreen.main.bounds.width/2-100, y: UIScreen.main.bounds.width/2-50),
-      size: CGSize(width: 200, height:100),
+      name: "Text Layer", 
+      position: CGPoint(x: 400, y: 450),
+      size: CGSize(width: 200, height: 100),
       content: .text("💪 Power Editor")
     ),
     Layer(
-      name: "Red Layer",
-      position:CGPoint(
-        x:UIScreen.main.bounds.width-110,
-        y:UIScreen.main.bounds.width-110
-      ),
+      name: "Blue Layer",
+      position: CGPoint(x: 790, y: 790),
+      size: CGSize(width: 200, height: 200),
       content: .color(.blue)
     )
   ]

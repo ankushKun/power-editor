@@ -21,4 +21,5 @@ enum Tool: String,CaseIterable {
 class OptionsModel: ObservableObject {
   @Published var maintainAspectRatio: Bool = true
   @Published var activeTool: Tool = .move
+  @Published var canvasSize: CGSize = CGSize(width: 1000, height: 1000)
 }
