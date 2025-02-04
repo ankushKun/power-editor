@@ -9,25 +9,26 @@
 import SwiftUI
 
 let iconSize: CGFloat = 25
+let initialCanvasSize: CGSize = CGSize(width: 1000, height: 1000)
 
 struct MainView: View {
   @State private var isSidebarVisible: Bool = false
   @State private var layers: [Layer] = [
     Layer(name: "Red Layer",
           position: CGPoint(x: 10, y: 10),
-          size: CGSize(width:200,height:200),
+          size: CGSize(width:initialCanvasSize.width/10,height:initialCanvasSize.height/10),
           content: .color(.red)
          ),
     Layer(
       name: "Text Layer", 
-      position: CGPoint(x: 400, y: 450),
-      size: CGSize(width: 200, height: 100),
+      position: CGPoint(x: initialCanvasSize.width/2 - initialCanvasSize.width/20, y: initialCanvasSize.height/2 - initialCanvasSize.height/20),
+      size: CGSize(width: initialCanvasSize.width/10, height: initialCanvasSize.height/10),
       content: .text("💪 Power Editor")
     ),
     Layer(
       name: "Blue Layer",
-      position: CGPoint(x: 790, y: 790),
-      size: CGSize(width: 200, height: 200),
+      position: CGPoint(x: initialCanvasSize.width - initialCanvasSize.width/10, y: initialCanvasSize.height - initialCanvasSize.height/10),
+      size: CGSize(width: initialCanvasSize.width/10, height: initialCanvasSize.height/10),
       content: .color(.blue)
     )
   ]

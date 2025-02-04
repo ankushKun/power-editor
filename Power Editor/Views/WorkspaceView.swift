@@ -8,49 +8,17 @@
 import SwiftUI
 import CoreGraphics
 
-private extension View {
-  func calculateRotationAngle(layerCenter: CGPoint, currentPoint: CGPoint) -> Double {
-    let deltaX = currentPoint.x - layerCenter.x
-    let deltaY = currentPoint.y - layerCenter.y
-    let angle = atan2(deltaX, -deltaY) * (180 / .pi)
-    return angle >= 0 ? angle : angle + 360
-  }
-  
-  func rotatePoint(point: CGPoint, around center: CGPoint, angle: Double) -> CGPoint {
-    let angleInRadians = angle * .pi / 180
-    let translatedX = point.x - center.x
-    let translatedY = point.y - center.y
-    let rotatedX = translatedX * cos(angleInRadians) - translatedY * sin(angleInRadians)
-    let rotatedY = translatedX * sin(angleInRadians) + translatedY * cos(angleInRadians)
-    return CGPoint(x: rotatedX + center.x, y: rotatedY + center.y)
-  }
-}
-
 struct WorkspaceView: View {
   @Binding var layers: [Layer]
   @EnvironmentObject var options: OptionsModel
   
-  @State private var initialPosition: CGPoint = .zero
-  @State private var initialSize: CGSize = .zero 
-  @State private var initialRotation: Double = .zero
-  @State private var startAngle: Double = .zero
+  @State var initialPosition: CGPoint = .zero
+  @State var initialSize: CGSize = .zero
+  @State var initialRotation: Double = .zero
+  @State var startAngle: Double = .zero
   
-  // Constants for transform controls
-  private let controlSize: CGFloat = 16
-  private let controlBorderWidth: CGFloat = 2
-  private let minLayerSize: CGFloat = 20
-  
-  var screenWidth: CGFloat { UIScreen.main.bounds.width }
-  
-  // Scale factor based on canvas size
-  var scaleFactor: CGFloat {
-    screenWidth / options.canvasSize.width
-  }
-  
-  // Actual control size accounting for canvas scale
-  var adjustedControlSize: CGFloat {
-    controlSize / scaleFactor
-  }
+  private var screenWidth: CGFloat { UIScreen.main.bounds.width }
+  private var scaleFactor: CGFloat { screenWidth / options.canvasSize.width }
   
   func deactivateLayers() {
     layers.enumerated().forEach { index, _ in
@@ -59,246 +27,238 @@ struct WorkspaceView: View {
   }
   
   func calculateRotationAngle(layerCenter: CGPoint, currentPoint: CGPoint) -> Double {
+    // Calculate the angle between the vertical line from the center and the line to the current point
     let deltaX = currentPoint.x - layerCenter.x
     let deltaY = currentPoint.y - layerCenter.y
+    
+    // Calculate angle in radians and convert to degrees
     let angle = atan2(deltaX, -deltaY) * (180 / .pi)
+    
+    // Normalize angle to 0-360 range
     return angle >= 0 ? angle : angle + 360
   }
   
   func rotatePoint(point: CGPoint, around center: CGPoint, angle: Double) -> CGPoint {
+    // Convert angle to radians
     let angleInRadians = angle * .pi / 180
+    
+    // Translate point to origin
     let translatedX = point.x - center.x
     let translatedY = point.y - center.y
+    
+    // Rotate point
     let rotatedX = translatedX * cos(angleInRadians) - translatedY * sin(angleInRadians)
     let rotatedY = translatedX * sin(angleInRadians) + translatedY * cos(angleInRadians)
-    return CGPoint(x: rotatedX + center.x, y: rotatedY + center.y)
+    
+    // Translate back
+    return CGPoint(
+      x: rotatedX + center.x,
+      y: rotatedY + center.y
+    )
   }
   
   var body: some View {
     VStack(spacing: 0) {
+      
       Rectangle()
         .onTapGesture { deactivateLayers() }
         .foregroundStyle(.gray)
-        .zIndex(0)
+        .zIndex(-10)
+
+      Spacer()
       
-      ZStack(alignment: .center) {
+      ZStack(alignment: .center) { 
         ForEach(
           Array(layers.enumerated().filter { $0.element.isVisible }).reversed(),
           id: \.element.id
-        ) { index, _ in
-          LayerView(
-            layer: layers[index],
-            index: index,
-            layers: $layers,
-            initialPosition: $initialPosition,
-            initialSize: $initialSize,
-            initialRotation: $initialRotation,
-            startAngle: $startAngle,
-            controlSize: adjustedControlSize
-          )
-          .environmentObject(options)
+        ) {
+          index,
+          _ in
+          LayerContentView(layer: layers[index])
+            .gesture(
+              TapGesture()
+                .onEnded {
+                  if (layers[index].isLocked) {return}
+                  let activeIndex = layers.firstIndex { $0.id == layers[index].id }!
+                  layers.enumerated().forEach { idx, _ in
+                    layers[idx].isActive = idx == activeIndex
+                  }
+                }
+            )
+            .highPriorityGesture(
+              DragGesture(minimumDistance: 1)
+                .onChanged { value in
+                  if (layers[index].isLocked) {return}
+                  if layers[index].isActive {
+                    if initialPosition == .zero {
+                      initialPosition = layers[index].position
+                    }
+                    layers[index].position.x = initialPosition.x - value.startLocation.x * scaleFactor + value.location.x * scaleFactor
+                    layers[index].position.y = initialPosition.y - value.startLocation.y * scaleFactor + value.location.y * scaleFactor
+                  }
+                }
+                .onEnded { _ in
+                  initialPosition = .zero
+                }
+            )
+            .overlay(
+              ZStack {
+                if layers[index].isActive && !layers[index].isLocked {
+                  Rectangle()
+                    .foregroundStyle(.clear).border(.blue)
+                    .frame(
+                      width: layers[index].size.width * scaleFactor,
+                      height: layers[index].size.height * scaleFactor
+                    )
+                    .rotationEffect(.degrees(layers[index].rotation))
+                    .position(
+                      x: layers[index].position.x * scaleFactor + layers[index].size.width * scaleFactor / 2,
+                      y: layers[index].position.y * scaleFactor + layers[index].size.height * scaleFactor / 2
+                    )
+                  //
+                  let layerCenter = CGPoint(
+                    x: layers[index].position.x * scaleFactor + layers[index].size.width * scaleFactor / 2,
+                    y: layers[index].position.y * scaleFactor + layers[index].size.height * scaleFactor / 2
+                  )
+                  
+                  let cornerPoint = CGPoint(
+                    x: layers[index].position.x * scaleFactor + layers[index].size.width * scaleFactor,
+                    y: layers[index].position.y * scaleFactor + layers[index].size.height * scaleFactor 
+                  )
+                  
+                  let rotatedCorner = rotatePoint(
+                    point: cornerPoint,
+                    around: layerCenter,
+                    angle: layers[index].rotation
+                  )
+                  // tooltip icon
+                  Group{
+                    switch options.activeTool {
+                      case .move:
+                        Rectangle()
+                          .foregroundStyle(.white.opacity(0.9))
+                          .border(.blue)
+                      case .rotate:
+                        Image(systemName: "arrow.trianglehead.2.clockwise.rotate.90")
+                          .foregroundColor(.blue)
+                          .background(.white.opacity(0.9))
+                          .cornerRadius(10)
+                    }
+                  }
+                  .frame(width: 15, height: 15)
+                  // this rotates in place instead of moving to the corner of rotated item
+                  .rotationEffect(.degrees(layers[index].rotation))
+                  .position(x: rotatedCorner.x, y: rotatedCorner.y)
+                  .highPriorityGesture(
+                    DragGesture(minimumDistance: 1)
+                      .onChanged { value in
+                        let dragDistX = value.location.x - value.startLocation.x
+                        let dragDistY = value.location.y - value.startLocation.y
+                        
+                        switch options.activeTool {
+                          case .move:
+                            
+                            if initialSize == .zero {
+                              initialSize = layers[index].size
+                            }
+                            
+                            if options.maintainAspectRatio {
+                              let aspectRatio = initialSize.width / initialSize.height
+                              let scalingFactor = max(dragDistX, dragDistY)
+                              
+                              let newWidth = max(20, initialSize.width + scalingFactor)
+                              let newHeight = max(20, newWidth / aspectRatio)
+                              
+                              layers[index].size = CGSize(width: newWidth, height: newHeight)
+                            } else {
+                              layers[index].size = CGSize(
+                                width: max(20, initialSize.width + dragDistX),
+                                height: max(20, initialSize.height + dragDistY)
+                              )
+                            }
+                          case .rotate:
+                            // calculate degree of rotation based on drag distance on x and y axis
+                            // add code here
+                            let layerCenter = CGPoint(
+                              x: layers[index].position.x * scaleFactor + layers[index].size.width * scaleFactor / 2,
+                              y: layers[index].position.y * scaleFactor + layers[index].size.height * scaleFactor / 2
+                            )
+                            
+                            if startAngle == 0 {
+                              startAngle = calculateRotationAngle(
+                                layerCenter: layerCenter,
+                                currentPoint: value.startLocation
+                              )
+                              initialRotation = layers[index].rotation
+                            }
+                            
+                            let currentAngle = calculateRotationAngle(
+                              layerCenter: layerCenter,
+                              currentPoint: value.location
+                            )
+                            
+                            // Calculate the difference in angle and add to initial rotation
+                            var angleDiff = currentAngle - startAngle
+                            
+                            // Ensure smooth rotation when crossing 0/360 degrees
+                            if angleDiff > 180 {
+                              angleDiff -= 360
+                            } else if angleDiff < -180 {
+                              angleDiff += 360
+                            }
+                            
+                            // Update layer rotation
+                            layers[index].rotation = initialRotation + angleDiff
+                        }
+                        
+                      }.onEnded { _ in
+                        initialSize = .zero
+                        initialRotation = .zero
+                        startAngle = .zero
+                      }
+                  )
+                }
+              }
+            )
         }
       }
       .contentShape(Rectangle())
       .background(.white)
-      .frame(width: options.canvasSize.width, height: options.canvasSize.height)
-      .frame(
-        minWidth: screenWidth,
-        idealWidth: screenWidth,
-        maxWidth: screenWidth,
-        minHeight: screenWidth,
-        idealHeight: screenWidth,
-        maxHeight: screenWidth
-      )
-      .scaleEffect(scaleFactor)
+      // .frame(width: screenWidth, height: screenWidth)
+      // .frame(minWidth: screenWidth, idealWidth: screenWidth, maxWidth: screenWidth, minHeight: screenWidth, idealHeight: screenWidth, maxHeight: screenWidth)
+      .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
+      .aspectRatio(options.canvasSize.width / options.canvasSize.height, contentMode: .fill)
       .onTapGesture { deactivateLayers() }
       .zIndex(1)
+      
       
       Rectangle()
         .onTapGesture { deactivateLayers() }
         .foregroundStyle(.gray)
-        .zIndex(0)
+        .zIndex(-10)
     }
     .background(.gray)
   }
-}
-
-// MARK: - Layer View
-private struct LayerView: View {
-  let layer: Layer
-  let index: Int
-  @Binding var layers: [Layer]
-  @Binding var initialPosition: CGPoint
-  @Binding var initialSize: CGSize
-  @Binding var initialRotation: Double
-  @Binding var startAngle: Double
-  let controlSize: CGFloat
   
-  @EnvironmentObject var options: OptionsModel
-  
-  private var layerCenter: CGPoint {
-    CGPoint(
-      x: layer.position.x + layer.size.width / 2,
-      y: layer.position.y + layer.size.height / 2
-    )
-  }
-  
-  var body: some View {
-    LayerContentView(layer: layer)
-      .gesture(tapGesture)
-      .highPriorityGesture(dragGesture)
-      .overlay(
-        ZStack {
-          if layer.isActive && !layer.isLocked {
-            // Selection border
-            Rectangle()
-              .stroke(.blue, lineWidth: 1)
-              .frame(width: layer.size.width, height: layer.size.height)
-              .rotationEffect(.degrees(layer.rotation))
-              .position(layerCenter)
-            
-            // Transform control
-            TransformControl(
-              layer: layer,
-              controlSize: controlSize,
-              onDrag: handleTransformDrag
-            )
-          }
-        }
-      )
-  }
-  
-  private var tapGesture: some Gesture {
-    TapGesture()
-      .onEnded {
-        guard !layer.isLocked else { return }
-        let activeIndex = layers.firstIndex { $0.id == layer.id }!
-        layers.enumerated().forEach { idx, _ in
-          layers[idx].isActive = idx == activeIndex
-        }
-      }
-  }
-  
-  private var dragGesture: some Gesture {
-    DragGesture(minimumDistance: 1)
-      .onChanged { value in
-        guard !layer.isLocked && layer.isActive else { return }
-        if initialPosition == .zero {
-          initialPosition = layer.position
-        }
-        layers[index].position.x = initialPosition.x - value.startLocation.x + value.location.x
-        layers[index].position.y = initialPosition.y - value.startLocation.y + value.location.y
-      }
-      .onEnded { _ in
-        initialPosition = .zero
-      }
-  }
-  
-  private func handleTransformDrag(_ value: DragGesture.Value) {
-    switch options.activeTool {
-    case .move:
-      handleResizeDrag(value)
-    case .rotate:
-      handleRotateDrag(value)
-    }
-  }
-  
-  private func handleResizeDrag(_ value: DragGesture.Value) {
-    if initialSize == .zero {
-      initialSize = layer.size
-    }
-    
-    let dragDistX = value.location.x - value.startLocation.x
-    let dragDistY = value.location.y - value.startLocation.y
-    
-    if options.maintainAspectRatio {
-      let aspectRatio = initialSize.width / initialSize.height
-      let scalingFactor = max(dragDistX, dragDistY)
-      
-      let newWidth = max(20, initialSize.width + scalingFactor)
-      let newHeight = max(20, newWidth / aspectRatio)
-      
-      layers[index].size = CGSize(width: newWidth, height: newHeight)
-    } else {
-      layers[index].size = CGSize(
-        width: max(20, initialSize.width + dragDistX),
-        height: max(20, initialSize.height + dragDistY)
-      )
-    }
-  }
-  
-  private func handleRotateDrag(_ value: DragGesture.Value) {
-    if startAngle == 0 {
-      startAngle = calculateRotationAngle(
-        layerCenter: layerCenter,
-        currentPoint: value.startLocation
-      )
-      initialRotation = layer.rotation
-    }
-    
-    let currentAngle = calculateRotationAngle(
-      layerCenter: layerCenter,
-      currentPoint: value.location
-    )
-    
-    var angleDiff = currentAngle - startAngle
-    
-    if angleDiff > 180 {
-      angleDiff -= 360
-    } else if angleDiff < -180 {
-      angleDiff += 360
-    }
-    
-    layers[index].rotation = initialRotation + angleDiff
-  }
-}
-
-// MARK: - Transform Control
-private struct TransformControl: View {
-  let layer: Layer
-  let controlSize: CGFloat
-  let onDrag: (DragGesture.Value) -> Void
-  
-  @EnvironmentObject var options: OptionsModel
-  
-  private var cornerPoint: CGPoint {
-    let center = CGPoint(
-      x: layer.position.x + layer.size.width / 2,
-      y: layer.position.y + layer.size.height / 2
-    )
-    
-    let corner = CGPoint(
-      x: layer.position.x + layer.size.width,
-      y: layer.position.y + layer.size.height
-    )
-    
-    return rotatePoint(
-      point: corner,
-      around: center,
-      angle: layer.rotation
-    )
-  }
-  
-  var body: some View {
-    Group {
-      switch options.activeTool {
-      case .move:
-        Rectangle()
-          .fill(.white.opacity(0.9))
-          .border(.blue, width: 2)
-      case .rotate:
-        Image(systemName: "arrow.trianglepath.2.circle.fill")
-          .font(.system(size: controlSize * 0.8))
-          .foregroundColor(.blue)
-          .background(Circle().fill(.white.opacity(0.9)))
+  // Extracted ZStack content for a specific layer
+  public func layerContent(for index: Int) -> some View {
+    ZStack {
+      switch layers[index].content {
+        case .color(let color):
+          Rectangle().fill(color)
+        case .image(let image):
+          image.resizable()
+        case .text(let text):
+          Text(text)
+            .font(.system(size: 20))
+            .foregroundColor(.black)
+            .multilineTextAlignment(.center)
       }
     }
-    .frame(width: controlSize, height: controlSize)
-    .position(cornerPoint)
-    .highPriorityGesture(
-      DragGesture(minimumDistance: 1)
-        .onChanged(onDrag)
-        .onEnded { _ in }
+    .frame(width: layers[index].size.width, height: layers[index].size.height)
+    .position(
+      x: layers[index].position.x * scaleFactor + layers[index].size.width * scaleFactor / 2,
+      y: layers[index].position.y * scaleFactor + layers[index].size.height * scaleFactor / 2
     )
   }
 }

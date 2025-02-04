@@ -9,7 +9,25 @@
 import SwiftUI
 
 struct LayerContentView: View {
-  var layer: Layer
+  let layer: Layer
+  @EnvironmentObject var options: OptionsModel
+  
+  private var screenWidth: CGFloat { UIScreen.main.bounds.width }
+  private var scaleFactor: CGFloat { screenWidth / options.canvasSize.width }
+  
+  private var scaledPosition: CGPoint {
+    CGPoint(
+      x: layer.position.x * scaleFactor,
+      y: layer.position.y * scaleFactor
+    )
+  }
+  
+  private var scaledSize: CGSize {
+    CGSize(
+      width: layer.size.width * scaleFactor,
+      height: layer.size.height * scaleFactor
+    )
+  }
   
   var body: some View {
     ZStack {
@@ -25,13 +43,12 @@ struct LayerContentView: View {
             .multilineTextAlignment(.center)
       }
     }
-    .frame(width: layer.size.width, height: layer.size.height)
+    .frame(width: scaledSize.width, height: scaledSize.height)
     .rotationEffect(.degrees(layer.rotation))
     .position(
-      x: layer.position.x + layer.size.width / 2,
-      y: layer.position.y + layer.size.height / 2
+      x: scaledPosition.x + scaledSize.width / 2,
+      y: scaledPosition.y + scaledSize.height / 2
     )
-    
     .opacity(layer.opacity)
   }
 }
