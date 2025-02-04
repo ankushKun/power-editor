@@ -10,7 +10,7 @@ struct SidebarView: View {
   let iconSize: CGFloat = 25
   @Binding var isSidebarVisible: Bool
   @Binding var layers: [Layer]
-  @State var deleteAlertVisible:Bool = false
+  @State var deleteAlertVisible: Bool = false
   
   func isLayerActive() -> Bool {
     return layers.contains(where: \.isActive)
@@ -22,125 +22,117 @@ struct SidebarView: View {
   
   func deleteActiveLayer() {
     guard let index = getActiveLayerIndex() else { return }
-    print("deleted layer", index)
     layers.remove(at: index)
   }
   
   var body: some View {
-    HStack{
+    HStack(spacing: 0) {
       VStack(alignment: .leading, spacing: 0) {
-        HStack
-        {
-          Image(systemName: "square.3.layers.3d").font(.system(size: iconSize))
-          Text("Layers").font(.headline).padding(.leading, 10)
+        // Header
+        HStack {
+          Label("Layers", systemImage: "square.3.layers.3d")
+            .font(.headline)
+            .foregroundStyle(.white)
+          
           Spacer()
-          Button(action:{
-            isSidebarVisible.toggle()
-          }) {
-            Image(systemName: "xmark").font(.system(size: iconSize))
+          
+          Button(action: { isSidebarVisible.toggle() }) {
+            Image(systemName: "xmark")
+              .font(.system(size: iconSize*0.75))
+              .foregroundStyle(.white)
           }
-        }.padding(.leading,10).padding(.trailing,15)
+        }
+        .padding()
+        .background(.black)
         
-        
-        
-        List($layers,editActions: .move) { $layer in
-          // Add layers dynamically
-          //          ForEach($layers) { $layer in
-          HStack() {
-            Button(action:{
-              // loop through all layers and set them to false
-              // for the active layer set isActive to true
+        // Layer List
+        List($layers, editActions: .move) { $layer in
+          HStack(spacing: 12) {
+            Button(action: {
               for i in layers.indices {
                 layers[i].isActive = (layers[i].id == layer.id)
               }
-              print(layers)
-            }){
+            }) {
               Text(layer.name)
-                .padding(.top,5)
-                .padding(.bottom,5)
-                .frame(
-                  maxWidth: .infinity,
-                  alignment: .leading
-                )
-            }.buttonStyle(PlainButtonStyle())
-            
-            Spacer()
-            
-            Button(action:{layer.isLocked.toggle()}){
-              Image(systemName: (layer.isLocked ? "lock":"lock.open")).font(.system(size: iconSize/1.25))
-            }.buttonStyle(PlainButtonStyle())
-            
-            Button(action:{layer.isVisible.toggle()}){
-              Image(systemName: (layer.isVisible ? "eye":"eye.slash"))
-                .font(.system(size: iconSize/1.5))
-            }.buttonStyle(PlainButtonStyle())
-          }.listRowBackground(layer.isActive ? .gray.opacity(0.3) : Color.clear)
-          //          }
-        }.listStyle(.plain)
-        
-        if isLayerActive(), let activeIndex = getActiveLayerIndex(), activeIndex >= 0 {
-          VStack(alignment: .leading,spacing: 5) {
-            HStack{
-              Spacer()
-              //              Button(action:{deleteAlertVisible = true}){
-              //                Image(systemName: "trash")
-              //                  .foregroundStyle(.red)
-              //                  .font(.system(size: iconSize/1.3))
-              //              }.alert("Are you sure you want to delete the layer? This action is irreversible", isPresented: $deleteAlertVisible){
-              //                Button("Delete", role:.destructive) {
-              //                  deleteActiveLayer()
-              //                }
-              //              }
-            }.padding(.trailing,7)
-            
-            HStack(spacing:5){
-              TextField("",
-                        text: Binding(
-                          get: {
-                            layers[activeIndex].name
-                          },
-                          set: { value in
-                            layers[activeIndex].name = value
-                          })
-              )
-              .padding(5)
-              .background(.white).foregroundStyle(.black)
+                .padding(.vertical, 8)
+                .foregroundStyle(.white)
+                .frame(maxWidth: .infinity, alignment: .leading)
             }
-            .padding(.leading,5)
-            .padding(.trailing,5)
+            .buttonStyle(.plain)
             
-            HStack(spacing: 5){
-              Text("Opacity")
-              Slider(
-                value: Binding(get: {layers[activeIndex].opacity}, set: { value in
-                  layers[activeIndex].opacity = value
-                }),
-                in: 0...1
-              )
-              Text("\(Int(layers[activeIndex].opacity*100))%")
-            }.padding(.leading,5).padding(.trailing,5)
-            
+            HStack(spacing: 16) {
+              Button(action: { layer.isLocked.toggle() }) {
+                Image(systemName: layer.isLocked ? "lock.fill" : "lock.open.fill")
+                  .foregroundStyle(layer.isLocked ? .blue : .gray)
+              }
+              .buttonStyle(.plain)
+              
+              Button(action: { layer.isVisible.toggle() }) {
+                Image(systemName: layer.isVisible ? "eye.fill" : "eye.slash.fill")
+                  .foregroundStyle(layer.isVisible ? .blue : .gray)
+              }
+              .buttonStyle(.plain)
+            }
           }
-          .frame(maxWidth: .infinity)
+          .listRowBackground(layer.isActive ? Color.blue.opacity(0.2) : Color.clear)
         }
-        Rectangle().frame(maxHeight: 50).foregroundStyle(.clear)
+        .listStyle(.plain)
         
+        // Layer Properties
+        if isLayerActive(), let activeIndex = getActiveLayerIndex(), activeIndex >= 0 {
+          VStack(spacing: 16) {
+            TextField("Layer Name", 
+                     text: Binding(
+                       get: { layers[activeIndex].name },
+                       set: { layers[activeIndex].name = $0 }
+                     )
+            )
+            .foregroundStyle(.black)
+            .background(.white)
+            .padding(.horizontal)
+            
+            VStack(alignment: .leading, spacing: 8) {
+              Text("Opacity")
+                .font(.subheadline)
+                .foregroundStyle(.gray)
+              
+              HStack {
+                Slider(
+                  value: Binding(
+                    get: { layers[activeIndex].opacity },
+                    set: { layers[activeIndex].opacity = $0 }
+                  ),
+                  in: 0...1
+                )
+                .tint(.blue)
+                
+                Text("\(Int(layers[activeIndex].opacity * 100))%")
+                  .foregroundStyle(.white)
+                  .frame(width: 45)
+              }
+            }
+            .padding(.horizontal)
+          }
+          .padding(.vertical)
+          .background(.black.opacity(0.5))
+        }
+        
+        Spacer(minLength: 50)
       }
-      .foregroundColor(.white)
-      .background(.black.opacity(0.85))
+      .frame(width: 300)
+      .background(.black.opacity(0.95))
       
-      if isSidebarVisible{
+      if isSidebarVisible {
         Rectangle()
           .foregroundColor(.clear)
-          .frame(maxWidth: 100, maxHeight: .infinity)
+          .frame(maxWidth: .infinity)
           .contentShape(Rectangle())
-        
           .onTapGesture {
             isSidebarVisible.toggle()
-          }.transition(.move(edge: .leading))
+          }
+          .transition(.opacity)
       }
-      
-    }.background(.black.opacity(0.5))
-    
+    }
+    .background(.black.opacity(0.3))
   }
 }

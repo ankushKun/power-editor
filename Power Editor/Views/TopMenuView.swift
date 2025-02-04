@@ -11,19 +11,17 @@ struct TopMenuView: View {
   @State private var deleteAlertVisible = false
   @State private var showExportOptions = false
   
-  private var screenWidth: CGFloat { UIScreen.main.bounds.width }
-  
   // MARK: - Layer Management
-  private func isLayerActive() -> Bool {
-    layers.contains(where: \.isActive)
-  }
-  
-  private func getActiveLayerIndex() -> Int? {
+  private var activeLayerIndex: Int? {
     layers.firstIndex(where: \.isActive)
   }
   
+  private var hasActiveLayer: Bool {
+    layers.contains(where: \.isActive)
+  }
+  
   private func deleteActiveLayer() {
-    guard let index = getActiveLayerIndex() else { return }
+    guard let index = activeLayerIndex else { return }
     layers.remove(at: index)
     showToastMessage("Layer deleted")
   }
@@ -55,52 +53,52 @@ struct TopMenuView: View {
     }
   }
   
-  // MARK: - Canvas Operations
+  // MARK: - File Operations
   private func saveCanvas() {
     let canvas = ZStack(alignment: .center) {
-      ForEach(Array(layers.enumerated().filter { $0.element.isVisible }).reversed(), id: \.element.id) { index, _ in
+      ForEach(layers.enumerated().filter { $0.element.isVisible }.reversed(), id: \.element.id) { index, _ in
         LayerContentView(layer: layers[index])
+          .environmentObject(options)
       }
     }
     .background(.white)
     .frame(width: options.canvasSize.width, height: options.canvasSize.height)
     
-    let renderer = ImageRenderer(content: canvas)
-    
-    if let img = renderer.uiImage {
-      UIImageWriteToSavedPhotosAlbum(img, nil, nil, nil)
+    if let image = ImageRenderer(content: canvas).uiImage {
+      UIImageWriteToSavedPhotosAlbum(image, nil, nil, nil)
       showPopup(message: "Image saved to Photos")
     } else {
       showPopup(message: "Failed to save image")
     }
   }
   
-  private func saveProject() {
-    let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
-    let fileURL = documentsDirectory.appendingPathComponent("layers.json")
-    
+  private func handleProjectOperation(_ operation: () throws -> Void, successMessage: String, failureMessage: String) {
     do {
-      let encoder = JSONEncoder()
-      encoder.outputFormatting = .prettyPrinted
-      let data = try encoder.encode(layers)
-      try data.write(to: fileURL)
-      showToastMessage("Project saved")
+      try operation()
+      showToastMessage(successMessage)
     } catch {
-      showToastMessage("Failed to save project")
+      showToastMessage(failureMessage)
     }
   }
   
-  private func loadProject() {
-    let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
-    let fileURL = documentsDirectory.appendingPathComponent("layers.json")
+  private func saveProject() {
+    let fileURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+      .appendingPathComponent("layers.json")
     
-    do {
-      let data = try Data(contentsOf: fileURL)
-      layers = try JSONDecoder().decode([Layer].self, from: data)
-      showToastMessage("Project loaded")
-    } catch {
-      showToastMessage("Failed to load project")
-    }
+    handleProjectOperation({
+      let encoder = JSONEncoder()
+      encoder.outputFormatting = .prettyPrinted
+      try encoder.encode(layers).write(to: fileURL)
+    }, successMessage: "Project saved", failureMessage: "Failed to save project")
+  }
+  
+  private func loadProject() {
+    let fileURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+      .appendingPathComponent("layers.json")
+    
+    handleProjectOperation({
+      layers = try JSONDecoder().decode([Layer].self, from: try Data(contentsOf: fileURL))
+    }, successMessage: "Project loaded", failureMessage: "Failed to load project")
   }
   
   // MARK: - View
@@ -190,15 +188,17 @@ struct TopMenuView: View {
   }
   
   private var aspectRatioButton: some View {
-    Button(action: {
-      options.maintainAspectRatio.toggle()
-      showToastMessage(options.maintainAspectRatio ? "Aspect Ratio Enabled" : "Aspect Ratio Disabled")
-    }) {
+    Button(action: toggleAspectRatio) {
       Image(systemName: "square.resize")
         .font(.system(size: iconSize))
     }
     .frame(width: 33)
     .foregroundStyle(options.maintainAspectRatio ? .blue : .gray)
+  }
+  
+  private func toggleAspectRatio() {
+    options.maintainAspectRatio.toggle()
+    showToastMessage(options.maintainAspectRatio ? "Aspect Ratio Enabled" : "Aspect Ratio Disabled")
   }
   
   private var toolButtons: some View {
@@ -217,16 +217,14 @@ struct TopMenuView: View {
   private var deleteButton: some View {
     Button(action: { deleteAlertVisible = true }) {
       Image(systemName: "trash")
-        .foregroundStyle(isLayerActive() ? .red : .gray)
+        .foregroundStyle(hasActiveLayer ? .red : .gray)
         .font(.system(size: iconSize/1.25))
         .padding(.trailing, 8)
     }
-    .disabled(!isLayerActive())
+    .disabled(!hasActiveLayer)
     .alert("Are you sure you want to delete the layer? This action is irreversible",
            isPresented: $deleteAlertVisible) {
-      Button("Delete", role: .destructive) {
-        deleteActiveLayer()
-      }
+      Button("Delete", role: .destructive, action: deleteActiveLayer)
     }
   }
   
