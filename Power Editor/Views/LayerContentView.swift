@@ -60,8 +60,6 @@ struct LayerContentView: View {
               Rectangle().fill(shape.color)
             case .circle:
               Circle().fill(shape.color)
-            default:
-              Rectangle().fill(shape.color)
           }
       }
     }

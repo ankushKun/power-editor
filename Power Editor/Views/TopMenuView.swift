@@ -187,6 +187,10 @@ struct TopMenuView: View {
             .frame(height: 24)
             .background(.gray.opacity(0.5))
           toolButtons
+          Divider()
+            .frame(height: 24)
+            .background(.gray.opacity(0.5))
+          modificationButtons
         }
         .padding(.horizontal, 12)
       }
@@ -225,6 +229,32 @@ struct TopMenuView: View {
         .buttonStyle(.plain)
         .contentShape(Rectangle())
       }
+    }
+  }
+
+  private var modificationButtons: some View {
+    HStack(spacing: 5) {
+      Button(action: {
+        if let activeLayer = activeLayerIndex {
+          layers[activeLayer].position.x = options.canvasSize.width / 2 - layers[activeLayer].size.width / 2
+        }
+      }) {
+        Image(systemName: "arrow.right.and.line.vertical.and.arrow.left")
+          .font(.system(size: 22, weight: .medium))
+          .foregroundStyle(hasActiveLayer ? .blue : .gray.opacity(0.5))
+      }
+      .disabled(!hasActiveLayer)
+
+      Button(action: {
+        if let activeLayer = activeLayerIndex {
+          layers[activeLayer].position.y = options.canvasSize.height / 2 - layers[activeLayer].size.height / 2
+        }
+      }) {
+        Image(systemName: "arrow.down.and.line.horizontal.and.arrow.up")
+          .font(.system(size: 22, weight: .medium))
+          .foregroundStyle(hasActiveLayer ? .blue : .gray.opacity(0.5))
+      }
+      .disabled(!hasActiveLayer)
     }
   }
   

@@ -7,7 +7,7 @@ struct ExportOptionsView: View {
   // Define dimension options as a static property
   private static let dimensionOptions = [
     ("Square", 1080, 1080, "square.fill"),
-    ("Story", 1080, 1920, "rectangle.portrait.fill"), 
+    ("Story", 1080, 1920, "rectangle.portrait.fill"),
     ("HD", 1280, 720, "rectangle.fill"),
     ("Full HD", 1920, 1080, "rectangle.fill")
   ]
@@ -31,7 +31,6 @@ struct ExportOptionsView: View {
             options.canvasSize.height = Double(height)
           }
         )
-        .buttonStyle(PlainButtonStyle()) // Add this to prevent section highlight
       }
     }
     .padding(.vertical, 8)
