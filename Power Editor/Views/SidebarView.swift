@@ -11,6 +11,7 @@ struct SidebarView: View {
   @Binding var isSidebarVisible: Bool
   @Binding var layers: [Layer]
   @State var deleteAlertVisible: Bool = false
+  @State var editingLayerId: UUID? = nil
   
   func isLayerActive() -> Bool {
     return layers.contains(where: \.isActive)
@@ -47,76 +48,89 @@ struct SidebarView: View {
         
         // Layer List
         List($layers, editActions: .move) { $layer in
-          HStack(spacing: 12) {
-            Button(action: {
-              for i in layers.indices {
-                layers[i].isActive = (layers[i].id == layer.id)
+          VStack(spacing: 4) {
+            // Existing layer header
+            HStack(spacing: 12) {
+              if editingLayerId == layer.id {
+                TextField("Layer Name", text: $layer.name)
+                  .textFieldStyle(.plain)
+                  .foregroundStyle(.white)
+                  .onSubmit { editingLayerId = nil }
+              } else {
+                Button(action: {
+                  for i in layers.indices {
+                    layers[i].isActive = (layers[i].id == layer.id)
+                  }
+                }) {
+                  Text(layer.name)
+                    .padding(.vertical, 8)
+                    .foregroundStyle(.white)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                }
+                .buttonStyle(.plain)
+                .onTapGesture(count: 2) {
+                  editingLayerId = layer.id
+                }
               }
-            }) {
-              Text(layer.name)
-                .padding(.vertical, 8)
-                .foregroundStyle(.white)
-                .frame(maxWidth: .infinity, alignment: .leading)
-            }
-            .buttonStyle(.plain)
-            
-            HStack(spacing: 16) {
-              Button(action: { layer.isLocked.toggle() }) {
-                Image(systemName: layer.isLocked ? "lock.fill" : "lock.open.fill")
-                  .foregroundStyle(layer.isLocked ? .blue : .gray)
-              }
-              .buttonStyle(.plain)
               
-              Button(action: { layer.isVisible.toggle() }) {
-                Image(systemName: layer.isVisible ? "eye.fill" : "eye.slash.fill")
-                  .foregroundStyle(layer.isVisible ? .blue : .gray)
+              HStack(spacing: 16) {
+                // Add duplicate button
+                Button(action: {
+                  let newLayer = Layer(
+                    name: "\(layer.name) Copy",
+                    isVisible: layer.isVisible,
+                    isActive: false,
+                    isLocked: layer.isLocked,
+                    opacity: layer.opacity,
+                    position: CGPoint(x: layer.position.x + 20, y: layer.position.y + 20),
+                    rotation: layer.rotation,
+                    size: layer.size,
+                    content: layer.content
+                  )
+                  // Insert after current layer
+                  if let index = layers.firstIndex(where: { $0.id == layer.id }) {
+                    layers.insert(newLayer, at: index + 1)
+                  }
+                }) {
+                  Image(systemName: "plus.square.on.square")
+                    .foregroundStyle(.gray)
+                }
+                .buttonStyle(.plain)
+                
+                // Existing lock button
+                Button(action: { layer.isLocked.toggle() }) {
+                  Image(systemName: layer.isLocked ? "lock.fill" : "lock.open.fill")
+                    .foregroundStyle(layer.isLocked ? .blue : .gray)
+                }
+                .buttonStyle(.plain)
+                
+                // Existing visibility button
+                Button(action: { layer.isVisible.toggle() }) {
+                  Image(systemName: layer.isVisible ? "eye.fill" : "eye.slash.fill")
+                    .foregroundStyle(layer.isVisible ? .blue : .gray)
+                }
+                .buttonStyle(.plain)
               }
-              .buttonStyle(.plain)
+            }
+            
+            // Add opacity slider
+            if layer.isActive {
+              HStack {
+                Image(systemName: "circle.lefthalf.filled")
+                  .foregroundStyle(.gray)
+                Slider(value: $layer.opacity, in: 0...1)
+                  .frame(width: .infinity)
+                Text("\(Int(layer.opacity * 100))%")
+                  .foregroundStyle(.gray)
+                  .font(.caption)
+              }
+              .padding(.horizontal)
+              .padding(.bottom, 4)
             }
           }
           .listRowBackground(layer.isActive ? Color.blue.opacity(0.2) : Color.clear)
         }
         .listStyle(.plain)
-        
-        // Layer Properties
-        if isLayerActive(), let activeIndex = getActiveLayerIndex(), activeIndex >= 0 {
-          VStack(spacing: 16) {
-            TextField("Layer Name", 
-                     text: Binding(
-                       get: { layers[activeIndex].name },
-                       set: { layers[activeIndex].name = $0 }
-                     )
-            )
-            .foregroundStyle(.black)
-            .background(.white)
-            .padding(2)
-            .cornerRadius(8)
-            
-            VStack(alignment: .leading, spacing: 8) {
-              Text("Opacity")
-                .font(.subheadline)
-                .foregroundStyle(.gray)
-              
-              HStack {
-                Slider(
-                  value: Binding(
-                    get: { layers[activeIndex].opacity },
-                    set: { layers[activeIndex].opacity = $0 }
-                  ),
-                  in: 0...1
-                )
-                .tint(.blue)
-                
-                Text("\(Int(layers[activeIndex].opacity * 100))%")
-                  .foregroundStyle(.white)
-                  .frame(width: 45)
-              }
-            }
-            .padding(.horizontal)
-          }
-          .padding(.vertical)
-          .background(.black.opacity(0.5))
-        }
         
         Spacer(minLength: 50)
       }

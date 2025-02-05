@@ -26,6 +26,26 @@ struct TopMenuView: View {
     showToastMessage("Layer deleted")
   }
   
+  private func duplicateActiveLayer() {
+    guard let activeIndex = activeLayerIndex else { return }
+    let activeLayer = layers[activeIndex]
+    
+    let newLayer = Layer(
+      name: "\(activeLayer.name) Copy",
+      isVisible: activeLayer.isVisible,
+      isActive: false,
+      isLocked: activeLayer.isLocked,
+      opacity: activeLayer.opacity,
+      position: CGPoint(x: activeLayer.position.x + 20, y: activeLayer.position.y + 20),
+      rotation: activeLayer.rotation,
+      size: activeLayer.size,
+      content: activeLayer.content
+    )
+    
+    layers.insert(newLayer, at: activeIndex + 1)
+    showToastMessage("Layer duplicated")
+  }
+  
   // MARK: - UI Feedback
   private func showToastMessage(_ message: String) {
     toastMessage = message
@@ -251,6 +271,13 @@ struct TopMenuView: View {
         }
       }) {
         Image(systemName: "arrow.down.and.line.horizontal.and.arrow.up")
+          .font(.system(size: 22, weight: .medium))
+          .foregroundStyle(hasActiveLayer ? .blue : .gray.opacity(0.5))
+      }
+      .disabled(!hasActiveLayer)
+
+      Button(action: duplicateActiveLayer) {
+        Image(systemName: "plus.square.on.square")
           .font(.system(size: 22, weight: .medium))
           .foregroundStyle(hasActiveLayer ? .blue : .gray.opacity(0.5))
       }
