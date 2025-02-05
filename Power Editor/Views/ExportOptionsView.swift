@@ -31,6 +31,7 @@ struct ExportOptionsView: View {
             options.canvasSize.height = Double(height)
           }
         )
+        .buttonStyle(.plain)
       }
     }
     .padding(.vertical, 8)
