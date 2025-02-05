@@ -89,7 +89,8 @@ struct SidebarView: View {
             )
             .foregroundStyle(.black)
             .background(.white)
-            .padding(.horizontal)
+            .padding(2)
+            .cornerRadius(8)
             
             VStack(alignment: .leading, spacing: 8) {
               Text("Opacity")

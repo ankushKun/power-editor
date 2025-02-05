@@ -16,7 +16,7 @@ struct MainView: View {
   @State private var layers: [Layer] = [
     Layer(name: "Red Shape",
           position: CGPoint(x: 10, y: 10),
-          size: CGSize(width:initialCanvasSize.width/5,height:initialCanvasSize.height/5),
+          size: CGSize(width:initialCanvasSize.width/3,height:initialCanvasSize.height/3),
           content: .shape(ShapeLayer(shape: .rectangle, color: .red))
          ),
     Layer(
@@ -27,8 +27,8 @@ struct MainView: View {
     ),
     Layer(
       name: "Blue Shape",
-      position: CGPoint(x: initialCanvasSize.width - initialCanvasSize.width/5 - 10, y: initialCanvasSize.height - initialCanvasSize.height/5 - 10),
-      size: CGSize(width: initialCanvasSize.width/5, height: initialCanvasSize.height/5),
+      position: CGPoint(x: initialCanvasSize.width - initialCanvasSize.width/3 - 10, y: initialCanvasSize.height - initialCanvasSize.height/3 - 10),
+      size: CGSize(width: initialCanvasSize.width/3, height: initialCanvasSize.height/3),
       content: .shape(ShapeLayer(shape: .circle, color: .blue))
     )
   ]
