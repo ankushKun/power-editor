@@ -111,8 +111,8 @@ struct TopMenuView: View {
       
       if showToast {
         ToastView(message: toastMessage)
-          .transition(.opacity)
-          .animation(.easeInOut, value: showToast)
+          .transition(.moveAndFade)
+          .animation(.spring(), value: showToast)
       }
     }
     .sheet(isPresented: $showExportOptions) {
@@ -128,15 +128,21 @@ struct TopMenuView: View {
       exportMenu
       moreMenu
     }
-    .frame(height: 40)
-    .padding(5)
+    .frame(height: 44)
+    .padding(.horizontal, 8)
     .background(.black)
+    .foregroundStyle(.blue)
   }
   
   private var layersButton: some View {
     Button(action: { isSidebarVisible.toggle() }) {
-      Label("Layers", systemImage: "square.3.layers.3d.top.filled")
-        .font(.system(size: iconSize/1.2))
+      HStack {
+        Image(systemName: "square.3.layers.3d.top.filled")
+          .font(.system(size: iconSize/1.2))
+        Text("Layers")
+          .font(.system(size: 17, weight: .medium))
+      }
+      .foregroundStyle(.blue)
     }
   }
   
@@ -151,7 +157,9 @@ struct TopMenuView: View {
     } label: {
       Image(systemName: "square.and.arrow.up")
         .font(.system(size: iconSize/1.1))
+        .foregroundStyle(.blue)
     }
+    .menuStyle(.borderlessButton)
   }
   
   private var moreMenu: some View {
@@ -164,35 +172,37 @@ struct TopMenuView: View {
     } label: {
       Image(systemName: "ellipsis.circle")
         .font(.system(size: iconSize/1.1))
+        .foregroundStyle(.blue)
     }
     .padding(.top, 5)
     .padding(.horizontal, 5)
   }
   
   private var toolBar: some View {
-    HStack {
+    HStack(spacing: 16) {
       ScrollView(.horizontal, showsIndicators: false) {
-        HStack {
+        HStack(spacing: 12) {
           aspectRatioButton
           Divider()
+            .frame(height: 24)
+            .background(.gray.opacity(0.5))
           toolButtons
         }
-        .frame(height: 40)
-        .frame(maxWidth: .infinity)
-        .padding(5)
+        .padding(.horizontal, 12)
       }
       
       deleteButton
     }
+    .frame(height: 50)
     .background(.black)
   }
   
   private var aspectRatioButton: some View {
     Button(action: toggleAspectRatio) {
       Image(systemName: "square.resize")
-        .font(.system(size: iconSize))
+        .font(.system(size: 22, weight: .medium))
     }
-    .frame(width: 33)
+    .buttonStyle(.plain)
     .foregroundStyle(options.maintainAspectRatio ? .blue : .gray)
   }
   
@@ -202,47 +212,71 @@ struct TopMenuView: View {
   }
   
   private var toolButtons: some View {
-    ForEach(Tool.allCases, id: \.self) { tool in
-      Button(action: { options.activeTool = tool }) {
-        Image(systemName: tool.icon)
-          .font(.system(size: iconSize))
+    HStack(spacing: 12) {
+      ForEach(Tool.allCases, id: \.self) { tool in
+        Button(action: { options.activeTool = tool }) {
+          Image(systemName: tool.icon)
+            .font(.system(size: 22, weight: .medium))
+            .frame(width: 40, height: 40)
+            .background(options.activeTool == tool ? .blue : .clear)
+            .foregroundStyle(options.activeTool == tool ? .black : .blue)
+            .clipShape(RoundedRectangle(cornerRadius: 8))
+        }
+        .buttonStyle(.plain)
+        .contentShape(Rectangle())
       }
-      .frame(width: 33)
-      .background(options.activeTool == tool ? .blue : .clear)
-      .foregroundStyle(options.activeTool == tool ? .black : .blue)
-      .cornerRadius(5)
     }
   }
   
   private var deleteButton: some View {
     Button(action: { deleteAlertVisible = true }) {
       Image(systemName: "trash")
-        .foregroundStyle(hasActiveLayer ? .red : .gray)
-        .font(.system(size: iconSize/1.25))
-        .padding(.trailing, 8)
+        .font(.system(size: 20, weight: .medium))
+        .foregroundStyle(hasActiveLayer ? .red : .gray.opacity(0.5))
+        .frame(width: 44, height: 44)
     }
     .disabled(!hasActiveLayer)
-    .alert("Are you sure you want to delete the layer? This action is irreversible",
-           isPresented: $deleteAlertVisible) {
+    .alert("Delete Layer", isPresented: $deleteAlertVisible) {
+      Button("Cancel", role: .cancel) { }
       Button("Delete", role: .destructive, action: deleteActiveLayer)
+    } message: {
+      Text("Are you sure you want to delete this layer? This action cannot be undone.")
     }
   }
   
   private var projectButtons: some View {
     Group {
-      Button("Open Project", systemImage: "iphone.and.arrow.right.outward", action: loadProject)
-      Button("Save Project", systemImage: "iphone.and.arrow.right.inward", action: saveProject)
+      Button(action: loadProject) {
+        Label("Open Project", systemImage: "folder")
+          .foregroundStyle(.primary)
+      }
+      Button(action: saveProject) {
+        Label("Save Project", systemImage: "square.and.arrow.down")
+          .foregroundStyle(.primary)
+      }
     }
   }
   
   private var socialLinks: some View {
     Group {
-      Link("Follow on X (Twitter)", 
-           destination: URL(string: "https://twitter.com/PowerEditor_")!)
-      Link("Star Github Repo",
-           destination: URL(string: "https://github.com/ankushKun/power-editor")!)
-      Link("App Store Listing",
-           destination: URL(string: "https://apps.apple.com/us/app/power-editor/id6739633465?platform=iphone")!)
+      Link(destination: URL(string: "https://twitter.com/PowerEditor_")!) {
+        Label("Follow on X (Twitter)", systemImage: "bird")
+      }
+      Link(destination: URL(string: "https://github.com/ankushKun/power-editor")!) {
+        Label("Star on GitHub", systemImage: "star")
+      }
+      Link(destination: URL(string: "https://apps.apple.com/us/app/power-editor/id6739633465?platform=iphone")!) {
+        Label("Rate on App Store", systemImage: "star.bubble")
+      }
     }
+  }
+}
+
+extension AnyTransition {
+  static var moveAndFade: AnyTransition {
+    .asymmetric(
+      insertion: .move(edge: .top).combined(with: .opacity),
+      removal: .move(edge: .top).combined(with: .opacity)
+    )
   }
 }
