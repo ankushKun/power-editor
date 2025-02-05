@@ -57,7 +57,7 @@ struct TopMenuView: View {
   private func saveCanvas() {
     let canvas = ZStack(alignment: .center) {
       ForEach(layers.enumerated().filter { $0.element.isVisible }.reversed(), id: \.element.id) { index, _ in
-        LayerContentView(layer: layers[index])
+        LayerContentView(layer: layers[index], export: true)
           .environmentObject(options)
       }
     }
