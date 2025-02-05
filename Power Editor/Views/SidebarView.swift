@@ -119,13 +119,14 @@ struct SidebarView: View {
                 Image(systemName: "circle.lefthalf.filled")
                   .foregroundStyle(.gray)
                 Slider(value: $layer.opacity, in: 0...1)
-                  .frame(width: .infinity)
+                  .frame(width: 100)
                 Text("\(Int(layer.opacity * 100))%")
                   .foregroundStyle(.gray)
                   .font(.caption)
               }
               .padding(.horizontal)
               .padding(.bottom, 4)
+              .frame(width:.infinity)
             }
           }
           .listRowBackground(layer.isActive ? Color.blue.opacity(0.2) : Color.clear)
