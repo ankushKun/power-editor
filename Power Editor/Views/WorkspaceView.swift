@@ -251,10 +251,20 @@ struct WorkspaceView: View {
         case .image(let image):
           image.resizable()
         case .text(let text):
-          Text(text)
+          Text(text.toText())
             .font(.system(size: 20))
             .foregroundColor(.black)
             .multilineTextAlignment(.center)
+        case .shape(let shape):
+          switch shape.shape {
+            case .rectangle:
+              Rectangle().fill(shape.color)
+            case .circle:
+              Circle().fill(shape.color)
+            default:
+              Rectangle().fill(shape.color)
+
+          }
       }
     }
     .frame(width: layers[index].size.width, height: layers[index].size.height)

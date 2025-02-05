@@ -208,11 +208,11 @@ struct TopMenuView: View {
   
   private func toggleAspectRatio() {
     options.maintainAspectRatio.toggle()
-    showToastMessage(options.maintainAspectRatio ? "Aspect Ratio Enabled" : "Aspect Ratio Disabled")
+    showToastMessage(options.maintainAspectRatio ? "Aspect Ratio Locked" : "Aspect Ratio Unlocked")
   }
   
   private var toolButtons: some View {
-    HStack(spacing: 12) {
+    HStack(spacing: 5) {
       ForEach(Tool.allCases, id: \.self) { tool in
         Button(action: { options.activeTool = tool }) {
           Image(systemName: tool.icon)

@@ -14,22 +14,22 @@ let initialCanvasSize: CGSize = CGSize(width: 1000, height: 1000)
 struct MainView: View {
   @State private var isSidebarVisible: Bool = false
   @State private var layers: [Layer] = [
-    Layer(name: "Red Layer",
+    Layer(name: "Red Shape",
           position: CGPoint(x: 10, y: 10),
           size: CGSize(width:initialCanvasSize.width/5,height:initialCanvasSize.height/5),
-          content: .color(.red)
+          content: .shape(ShapeLayer(shape: .rectangle, color: .red))
          ),
     Layer(
       name: "Text Layer", 
       position: CGPoint(x: initialCanvasSize.width/2 - 250, y: initialCanvasSize.height/2 - 50),
       size: CGSize(width: 500, height: 100),
-      content: .text("💪 Power Editor")
+      content: .text(TextLayer(text: "💪 Power Editor", textStyle: TextStyle(size: 20, weight: .regular, isItalic: false, color: .black, fontFamily: "Helvetica Neue")) )
     ),
     Layer(
-      name: "Blue Layer",
+      name: "Blue Shape",
       position: CGPoint(x: initialCanvasSize.width - initialCanvasSize.width/5 - 10, y: initialCanvasSize.height - initialCanvasSize.height/5 - 10),
       size: CGSize(width: initialCanvasSize.width/5, height: initialCanvasSize.height/5),
-      content: .color(.blue)
+      content: .shape(ShapeLayer(shape: .circle, color: .blue))
     )
   ]
   

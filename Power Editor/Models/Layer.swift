@@ -8,36 +8,6 @@
 
 import SwiftUI
 
-//extension CGPoint: Codable {
-//  public func encode(to encoder: Encoder) throws {
-//    var container = encoder.unkeyedContainer()
-//    try container.encode(x)
-//    try container.encode(y)
-//  }
-//  
-//  public init(from decoder: Decoder) throws {
-//    var container = try decoder.unkeyedContainer()
-//    let x = try container.decode(Double.self)
-//    let y = try container.decode(Double.self)
-//    self.init(x: x, y: y)
-//  }
-//}
-//
-//extension CGSize: Codable {
-//  public func encode(to encoder: Encoder) throws {
-//    var container = encoder.unkeyedContainer()
-//    try container.encode(width)
-//    try container.encode(height)
-//  }
-//  
-//  public init(from decoder: Decoder) throws {
-//    var container = try decoder.unkeyedContainer()
-//    let width = try container.decode(Double.self)
-//    let height = try container.decode(Double.self)
-//    self.init(width: width, height: height)
-//  }
-//}
-
 
 struct Layer: Identifiable, Codable {
   let id: UUID
@@ -73,7 +43,7 @@ struct Layer: Identifiable, Codable {
   }
 }
 
-struct ColorComponents: Codable {
+public struct ColorComponents: Codable {
   let red: Double
   let green: Double
   let blue: Double
@@ -102,14 +72,15 @@ struct ColorComponents: Codable {
 enum LayerContent: Codable {
   case color(Color)
   case image(Image)
-  case text(String)
+  case text(TextLayer)
+  case shape(ShapeLayer)
   
   private enum ContentType: String, Codable {
-    case color, image, text
+    case color, image, text, shape
   }
   
   private enum CodingKeys: String, CodingKey {
-    case type, text, color
+    case type, text, color, shape
   }
   
   func encode(to encoder: Encoder) throws {
@@ -127,6 +98,10 @@ enum LayerContent: Codable {
         
       case .image:
         try container.encode(ContentType.image.rawValue, forKey: .type)
+
+      case .shape(let shape):
+        try container.encode(ContentType.shape.rawValue, forKey: .type)
+        try container.encode(shape, forKey: .shape)
     }
   }
   
@@ -144,12 +119,16 @@ enum LayerContent: Codable {
         }
         
       case ContentType.text.rawValue:
-        let text = try container.decode(String.self, forKey: .text)
+        let text = try container.decode(TextLayer.self, forKey: .text)
         self = .text(text)
         
       case ContentType.image.rawValue:
         self = .image(Image(systemName: "photo"))
-        
+
+      case ContentType.shape.rawValue:
+        let shape = try container.decode(ShapeLayer.self, forKey: .shape)
+        self = .shape(shape)
+
       default:
         throw DecodingError.dataCorruptedError(
           forKey: .type,
@@ -159,3 +138,4 @@ enum LayerContent: Codable {
     }
   }
 }
+

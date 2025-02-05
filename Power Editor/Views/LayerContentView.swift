@@ -37,10 +37,21 @@ struct LayerContentView: View {
         case .image(let image):
           image.resizable()
         case .text(let text):
-          Text(text)
-            .font(.system(size: 20))
-            .foregroundColor(.black)
+          Text(text.toText())
+            .font(.custom(text.toTextStyle().fontFamily, size: text.toTextStyle().size, relativeTo: .body))
+            .fontWeight(text.toTextStyle().weight)
+            .italic(text.toTextStyle().isItalic)
+            .foregroundColor(text.toTextStyle().color)
             .multilineTextAlignment(.center)
+        case .shape(let shape):
+          switch shape.shape {
+            case .rectangle:
+              Rectangle().fill(shape.color)
+            case .circle:
+              Circle().fill(shape.color)
+            default:
+              Rectangle().fill(shape.color)
+          }
       }
     }
     .frame(width: scaledSize.width, height: scaledSize.height)

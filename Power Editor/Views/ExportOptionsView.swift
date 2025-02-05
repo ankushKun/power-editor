@@ -28,36 +28,31 @@ struct ExportOptionsView: View {
         }
         
         Section(header: Text("Common Dimensions")) {
-          ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 12) {
-              ForEach([
-                (1080, 1080), // Square
-                (1080, 1920), // Story
-                (1200, 630),  // Facebook
-                (1280, 720),  // HD
-                (1920, 1080)  // Full HD
-              ], id: \.0) { width, height in
-                Button(action: {
-                  options.canvasSize.width = Double(width)
-                  options.canvasSize.height = Double(height)
-                }) {
-                  VStack {
-                    Text("\(width)×\(height)")
-                      .font(.caption)
-                    Text(width == height ? "Square" :
-                         width == 1080 && height == 1920 ? "Story" :
-                         width == 1200 ? "Facebook" :
-                         width == 1280 ? "HD" : "Full HD")
-                      .font(.caption2)
-                  }
-                  .padding(8)
-                  .background(Color.blue.opacity(0.1))
-                  .cornerRadius(8)
+          VStack(spacing: 12) {
+            ForEach([
+              (1080, 1080), // Square
+              (1080, 1920), // Story
+              (1280, 720),  // HD
+              (1920, 1080)  // Full HD
+            ], id: \.0) { width, height in
+              Button(action: {
+                options.canvasSize.width = Double(width)
+                options.canvasSize.height = Double(height)
+              }) {
+                HStack(alignment: .top) {
+                  Text("\(width)×\(height)")
+                    .font(.caption)
+                  Image(systemName: width == height ? "square.fill" :
+                       height > width ? "rectangle.portrait.fill" : "rectangle.fill")
+                    .font(.caption2)
                 }
+                .padding(8)
+                .background(Color.blue.opacity(0.1))
+                .cornerRadius(8)
               }
             }
-            .padding(.vertical, 4)
           }
+          .padding(.vertical, 4)
         }
       }
       .navigationTitle("Canvas Settings")
